@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using UnityEngine;
 
 public class Enemy : MonoBehaviour
@@ -35,5 +34,18 @@ public class Enemy : MonoBehaviour
         Vector3 tempPos = pos;
         tempPos.y -= speed * Time.deltaTime;
         pos = tempPos;
+    }
+
+    void OnCollisionEnter(Collision coll)
+    {
+        GameObject otherGO = coll.gameObject;
+        if (otherGO.GetComponent<ProjectileHero>() != null)
+        {
+            Destroy(otherGO);
+            Destroy(gameObject);
+        } else
+        {
+            Debug.Log("Enemy hit by non-ProjectileHero: " + otherGO.name);
+        }
     }
 }

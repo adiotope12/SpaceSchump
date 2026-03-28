@@ -10,6 +10,8 @@ public class main : MonoBehaviour
     public GameObject[] prefabEnemy;
     public float enemySpawnPerSecond = 0.5f;
     public float enemyInsetDefault = 1.5f;
+    public float gameRestartDelay = 2f;
+
 
     private BoundsCheck bndCheck;
     void Awake()
@@ -36,6 +38,21 @@ public class main : MonoBehaviour
         pos.y = bndCheck.camHeight + enemyInset;
         go.transform.position = pos;
         Invoke("SpawnEnemy", 1f / enemySpawnPerSecond);
+    }
+
+    void DelayedRestart()
+    {
+        Invoke(nameof(Restart), gameRestartDelay);
+    }
+
+    void Restart()
+    {
+        SceneManager.LoadScene("__Scene_0");
+    }
+
+    static public void HERO_DIED()
+    {
+        S.DelayedRestart();
     }
     // Start is called before the first frame update
 }
