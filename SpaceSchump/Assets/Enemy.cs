@@ -1,0 +1,39 @@
+using System.Collections;
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using UnityEngine;
+
+public class Enemy : MonoBehaviour
+{
+    [Header("Inscribed")]
+    public float speed = 10f;
+    public float fireRate = 0.3f;
+    public float health = 10;
+    public int score = 100;
+    public Vector3 pos {
+        get { return this.transform.position; }
+        set { this.transform.position = value; }
+    }
+    // Update is called once per frame
+    void Update()
+    {
+        Move();
+        if(bndChehck.LocIs(BoundsCheck.eScreenLocs.offDown))
+        {
+            Destroy(this.gameObject);
+        }
+    }
+
+    private BoundsCheck bndChehck;
+    void Awake()
+    {
+        bndChehck = GetComponent<BoundsCheck>();
+    }
+
+    public virtual void Move()
+    {
+        Vector3 tempPos = pos;
+        tempPos.y -= speed * Time.deltaTime;
+        pos = tempPos;
+    }
+}
