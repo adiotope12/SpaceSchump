@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using UnityEngine;
 
 public class Enemy : MonoBehaviour
@@ -9,6 +10,8 @@ public class Enemy : MonoBehaviour
     public float fireRate = 0.3f;
     public float health = 10;
     public int score = 100;
+    public float powerUpDropChance = 1f;
+    protected bool calledShipDestroyed = false;
     public Vector3 pos {
         get { return this.transform.position; }
         set { this.transform.position = value; }
@@ -17,16 +20,16 @@ public class Enemy : MonoBehaviour
     void Update()
     {
         Move();
-        if(bndChehck.LocIs(BoundsCheck.eScreenLocs.offDown))
+        if(bndCheck.LocIs(BoundsCheck.eScreenLocs.offDown))
         {
             Destroy(this.gameObject);
         }
     }
 
-    private BoundsCheck bndChehck;
+    protected BoundsCheck bndCheck;
     void Awake()
     {
-        bndChehck = GetComponent<BoundsCheck>();
+        bndCheck = GetComponent<BoundsCheck>();
     }
 
     public virtual void Move()
@@ -39,13 +42,28 @@ public class Enemy : MonoBehaviour
     void OnCollisionEnter(Collision coll)
     {
         GameObject otherGO = coll.gameObject;
-        if (otherGO.GetComponent<ProjectileHero>() != null)
+        ProjectileHero p = otherGO.GetComponent<ProjectileHero>();
+        if(p != null)
         {
+            if(bndCheck.isOnScreen)
+            {
+                health -= main.GET_WEAPON_DEFINITION(p.type).damageOnHit;
+                if (health <= 0)
+                {
+                    if(!calledShipDestroyed) 
+                    {
+                        main.SHIP_DESTROYED(this);
+                        calledShipDestroyed = true;
+                    }
+                    Destroy(this.gameObject);
+                }
+            }
             Destroy(otherGO);
-            Destroy(gameObject);
-        } else
+         }
+        else
         {
             Debug.Log("Enemy hit by non-ProjectileHero: " + otherGO.name);
         }
+        
     }
 }
