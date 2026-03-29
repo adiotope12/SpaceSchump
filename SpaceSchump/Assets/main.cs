@@ -24,12 +24,9 @@ public class main : MonoBehaviour
 
     static public WeaponDefinition GET_WEAPON_DEFINITION(eWeaponType wt)
     {
-        foreach (WeaponDefinition def in S.weaponDefinitions)
+        if(WEAP_DICT.ContainsKey(wt))
         {
-            if (def.type == wt)
-            {
-                return def;
-            }
+            return WEAP_DICT[wt];
         }
         return new WeaponDefinition();
     }
@@ -90,12 +87,18 @@ public class main : MonoBehaviour
     
     static public void SHIP_DESTROYED(Enemy e)
     {
+        if (S == null)
+    {
+        Debug.LogWarning("main.S is null in SHIP_DESTROYED! Check initialization order.");
+        return;
+    }
         if (Random.value <= e.powerUpDropChance)
         {
+            Debug.LogWarning("main.S is initialization order.");
             int ndx = Random.Range(0, S.powerUpFrequency.Length);
             eWeaponType pUpType = S.powerUpFrequency[ndx];
 
-            GameObject go = Instantiate(S.prefabPowerUp);
+            GameObject go = Instantiate<GameObject>(S.prefabPowerUp);
             PowerUp pUp = go.GetComponent<PowerUp>();
             pUp.SetType(pUpType);
             pUp.transform.position = e.transform.position;

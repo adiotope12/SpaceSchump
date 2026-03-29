@@ -1,7 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
-using System.Numerics;
 using UnityEngine;
 
 [RequireComponent(typeof(BoundsCheck))]
@@ -22,10 +20,6 @@ public class PowerUp : MonoBehaviour
     private Rigidbody rigid;
     private BoundsCheck bndCheck;
     private  Material cubeMat;
-    public Vector3 velocity;
-    public float lifeTimer;
-    public float fadeTimer;
-
     void Awake()
     {
         cube = transform.GetChild(0).gameObject;
@@ -35,5 +29,65 @@ public class PowerUp : MonoBehaviour
         cubeMat = cube.GetComponent<Renderer>().material;
 
         Vector3 vel = Random.onUnitSphere;
+        vel.z = 0;
+        vel.Normalize();
+
+        vel *= Random.Range(driftMinMax.x, driftMinMax.y);
+        rigid.velocity = vel;
+
+        transform.rotation = Quaternion.identity;
+        
+        rotPerSecond = new Vector3(Random.Range(rotMinMax[0], rotMinMax[1]), 
+                                    Random.Range(rotMinMax[0], rotMinMax[1]), 
+                                    Random.Range(rotMinMax[0], rotMinMax[1]));
+
+        birthTime = Time.time;
+    }
+
+    void Update()
+    {
+        cube.transform.rotation = Quaternion.Euler(rotPerSecond * Time.time);
+        float u = (Time.time - (birthTime + lifeTime)) / fadeTime;
+        if (u >= 1)
+        {
+            Destroy(this.gameObject);
+            return;
+        }
+        if (u > 0)
+        {
+            Color c = cubeMat.color;
+            c.a = 1f - u;
+            cubeMat.color = c;
+            c = letter.color;
+            c.a = 1f - u;
+            letter.color = c;
+        }
+
+        if(!bndCheck.isOnScreen)
+        {
+            Destroy(this.gameObject);
+        }
+    }
+
+    // public eWeaponType type
+    // {
+    //     get { return type; }
+    //     set
+    //     {
+    //         SetType(value);
+    //     }
+    // }
+
+    public void SetType(eWeaponType wt)
+    {
+        type = wt;
+        WeaponDefinition def = main.GET_WEAPON_DEFINITION(type);
+        cubeMat.color = def.powerUpColor;
+        letter.text = def.letter;
+    }
+
+    public void AbsorbedBy(GameObject target)
+    {
+        Destroy(this.gameObject);
     }
 }

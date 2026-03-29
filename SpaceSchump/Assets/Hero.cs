@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
 
 public class Hero : MonoBehaviour
@@ -12,11 +13,14 @@ public class Hero : MonoBehaviour
     public float pitchMult = 30;
     public GameObject projectilePrefab;
     public float projectileSpeed = 40;
+    public Weapon[] weapons;
 
     [Header("Dynamic")] [Range(0,4)]
     public float _shieldLevel = 1;
     [Tooltip("This field holds a  referrence to  the last triggering GameObject")]
     public GameObject lastTriggerGo = null;
+    public delegate void WeaponFireDelegate();
+    public WeaponFireDelegate fireEvent;
 
      void Awake()
     {
@@ -28,6 +32,10 @@ public class Hero : MonoBehaviour
         {
             Debug.LogError("Hero.Awake() - Attempted to assign second Hero.S!");
         }
+
+        ClearWeapons();
+        
+        weapons[0].SetType(eWeaponType.blaster);
     }
 
     // Update is called once per frame
@@ -42,19 +50,12 @@ public class Hero : MonoBehaviour
         transform.position = pos;
 
         transform.rotation = Quaternion.Euler(vAxis * pitchMult, hAxis * rollMult, 0);
-        if (Input.GetKeyDown(KeyCode.Space))
+        if(Input.GetAxis("Jump") == 1 && fireEvent != null)
         {
-            TempFire();
+            fireEvent();
         }
     }
     
-    void TempFire()
-    {
-        GameObject projGO = Instantiate<GameObject>(projectilePrefab);
-        projGO.transform.position = transform.position;
-        Rigidbody rigidB = projGO.GetComponent<Rigidbody>();
-        rigidB.velocity = Vector3.up * projectileSpeed;
-    }
     void OnTriggerEnter(Collider other){
         Transform rootT = other.gameObject.transform.root;
         GameObject go = rootT.gameObject;
@@ -62,15 +63,47 @@ public class Hero : MonoBehaviour
         lastTriggerGo = go;
 
         Enemy enemy = go.GetComponent<Enemy>();
+        PowerUp pUp = go.GetComponent<PowerUp>();
         if (enemy != null)
         {
             shieldLevel--;
             Destroy(go);
+        } else if (pUp != null)
+        {
+            AbsorbPowerUp(pUp);
         }
          else
         {
            Debug.LogWarning("Triggered by non-Enemy: " + go.name);
         }
+    }
+
+    public void AbsorbPowerUp(PowerUp pUp)
+    {
+        switch (pUp.type)
+        {
+            case eWeaponType.shield:
+                shieldLevel++;
+                break;
+            default:
+                Weapon w = GetEmptyWeapon();
+                if(pUp.type == weapons[0].type)
+                {
+                    Weapon weap = GetEmptyWeapon();
+                    if (weap != null)
+                    {
+                        weap.SetType(pUp.type);
+                    }
+                } else 
+                {
+                    ClearWeapons();
+                    Weapon weap = GetEmptyWeapon();
+                    weapons[0].SetType(pUp.type);
+                }
+
+                break;
+        }
+        pUp.AbsorbedBy(this.gameObject);
     }
 
     public float shieldLevel
@@ -85,5 +118,27 @@ public class Hero : MonoBehaviour
                 main.HERO_DIED();
             }
         }
-    }   
+    }  
+
+    Weapon GetEmptyWeapon()
+    {
+        for (int i = 0; i < weapons.Length; i++)
+        {
+            if (weapons[i].type == eWeaponType.none)
+            {
+                return weapons[i];
+            }
+        }
+        return null;
+    }
+
+    void ClearWeapons()
+    {
+        foreach (Weapon w in weapons)
+        {
+            w.SetType(eWeaponType.none);
+        }
+    }
+
+
 }

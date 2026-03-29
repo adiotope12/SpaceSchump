@@ -50,7 +50,6 @@ public class BlinkColorOnHit : MonoBehaviour
     public void SetColors()
     {
         showingColor = true;
-        Debug.Log("Enemy hit by non-ProjectileHero: ");
         blinkCompleteTime = Time.time + blinkDuration;
         for (int i = 0; i < materials.Length; i++)
         {

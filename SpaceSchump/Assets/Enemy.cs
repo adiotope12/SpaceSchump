@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using UnityEngine;
 
 public class Enemy : MonoBehaviour
@@ -52,17 +51,19 @@ public class Enemy : MonoBehaviour
                 {
                     if(!calledShipDestroyed) 
                     {
-                        main.SHIP_DESTROYED(this);
+                        Debug.Log(this);
                         calledShipDestroyed = true;
+                        main.SHIP_DESTROYED(this);
                     }
                     Destroy(this.gameObject);
                 }
             }
+            Debug.Log(health);
             Destroy(otherGO);
          }
         else
         {
-            Debug.Log("Enemy hit by non-ProjectileHero: " + otherGO.name);
+            Debug.Log("Enemy hitt by non-ProjectileHero: " + otherGO.name);
         }
         
     }
